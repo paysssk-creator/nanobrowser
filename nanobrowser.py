@@ -232,7 +232,7 @@ class NB:
           except:text=data.decode("utf-8","replace")
         else:text=data.decode("utf-8","replace")
         self.r.after(0,lambda:self._r(text,url,ct,ah))
-      except Exception as e:self.r.after(0,lambda:self._e(url,str(e)))
+      except Exception as e:self.r.after(0,lambda e=e:self._e(url,str(e)))
     threading.Thread(target=dn,daemon=True).start()
   def _r(self,text,url,ct,ah):
     if"br"not in self.p:bf=tk.Frame(self.ct,bg=BG);self.p["br"]=bf;self.bct=st.ScrolledText(bf,bg=BG,fg=FG,font=("Consolas",10),wrap=tk.WORD,padx=16,pady=12);self.bct.pack(fill=tk.BOTH,expand=True)
