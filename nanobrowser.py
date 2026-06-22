@@ -2,8 +2,9 @@
 """Nanobrowser v2.0 - LLM paid+free, MCP 19, A-Share, Hacker"""
 import tkinter as tk
 from tkinter import ttk, scrolledtext as st
-import threading, json, time, os, re
+import threading, json, time, os, re, sys
 import urllib.request as ur, urllib.parse as up
+sys.path.insert(0, r"C:\Users\ADMIN\GBTXIAOTUDOUAI")
 
 BG="#0d1117";C1="#161b22";C2="#1f2937";FG="#c9d1d9"
 AC="#238636";RD="#f85149";WN="#d29922";GR="#3fb950";T3="#8b949e"
@@ -87,12 +88,12 @@ class NB:
     self.sb=tk.Frame(self.r,bg=C1,width=160);self.sb.pack(side=tk.LEFT,fill=tk.Y);self.sb.pack_propagate(False)
     tk.Label(self.sb,text="NB v2.0",bg=C1,fg=AC,font=("Segoe UI",11,"bold")).pack(pady=(10,2))
     self.sbtn={}
-    for nm,pn in[("Dash","d"),("LLM","l"),("Share","a"),("Hack","h"),("MCP","m"),("Desk","k")]:
+    for nm,pn in[("Dash","d"),("LLM","l"),("Share","a"),("Hack","h"),("MCP","m"),("Desk","k"),("Keys","g"),("Trade","t"),("AI","ai"),("Sec","s"),("Stat","st")]:
       b=tk.Button(self.sb,text=nm,bg=C1,fg=T3,font=("Segoe UI",9),bd=0,anchor="w",cursor="hand2",activebackground=C2,activeforeground=FG,command=lambda v=pn:self._sh(v))
       b.pack(fill=tk.X,padx=4,pady=1,ipady=5);self.sbtn[pn]=b
     self.ct=tk.Frame(self.r,bg=BG);self.ct.pack(side=tk.LEFT,fill=tk.BOTH,expand=True)
-    for pn in["d","l","a","h","m","k"]:f=tk.Frame(self.ct,bg=BG);self.p[pn]=f
-    self._bd();self._bl();self._ba();self._bh();self._bm();self._bk();self._sh("d")
+    for pn in["d","l","a","h","m","k","g","t","ai","s","st"]:f=tk.Frame(self.ct,bg=BG);self.p[pn]=f
+    self._bd();self._bl();self._ba();self._bh();self._bm();self._bk();self._bg();self._bt();self._bai();self._bs();self._bst();self._sh("d")
     sb=tk.Frame(self.r,bg=C2,height=20);sb.pack(fill=tk.X,side=tk.BOTTOM);sb.pack_propagate(False)
     self.stl=tk.Label(sb,text="Ready",bg=C2,fg=T3,font=("Segoe UI",8),anchor="w");self.stl.pack(side=tk.LEFT,padx=8)
 
@@ -105,6 +106,11 @@ class NB:
     if pn=="h":self._rh()
     if pn=="m":self._rm()
     if pn=="k":self._rk()
+    if pn=="g":self._rg()
+    if pn=="t":self._rt()
+    if pn=="ai":self._rai()
+    if pn=="s":self._rs()
+    if pn=="st":self._rst()
 
   def _bd(self):
     p=self.p["d"];r1=tk.Frame(p,bg=BG);r1.pack(fill=tk.BOTH,expand=True);r2=tk.Frame(p,bg=BG);r2.pack(fill=tk.BOTH,expand=True)
@@ -266,6 +272,134 @@ class NB:
       self.bct.pack(fill=tk.BOTH,expand=True)
     self._sh("br");self.bct.configure(state=tk.NORMAL);self.bct.delete(1.0,tk.END)
     self.bct.insert(tk.END,"ERR"+chr(10)+url+chr(10)+chr(10)+err+chr(10));self.bct.configure(state=tk.DISABLED);self.stl.config(text="Error")
+  def _bg(self):
+    p=self.p["g"];hd=tk.Frame(p,bg=C1,height=28);hd.pack(fill=tk.X,padx=8,pady=(8,4));hd.pack_propagate(False)
+    tk.Label(hd,text="GBT Keys (11 providers)",bg=C1,fg=FG,font=("Segoe UI",11,"bold")).pack(side=tk.LEFT)
+    tk.Button(hd,text="Import All",bg=AC,fg="white",font=("Segoe UI",8),bd=0,padx=8,command=self._imp_keys).pack(side=tk.RIGHT,padx=4)
+    self.kg_list=tk.Frame(p,bg=BG);self.kg_list.pack(fill=tk.BOTH,expand=True,padx=8)
+    self.kg_out=st.ScrolledText(p,height=3,bg=C2,fg=FG,font=("Consolas",8),wrap=tk.WORD);self.kg_out.pack(fill=tk.X,padx=8,pady=(4,8))
+  def _rg(self):
+    [w.destroy()for w in self.kg_list.winfo_children()]
+    try:
+     NL=chr(10);from gbt.keydb import KeyDB,FREE_TIER;db=KeyDB()
+     for pid,info in sorted(FREE_TIER.items(),key=lambda x:x[1]["pri"]):
+      key=db.get(pid);r=tk.Frame(self.kg_list,bg=C1 if key else BG);r.pack(fill=tk.X,pady=1)
+      c=GR if key else T3
+      tk.Label(r,text="*"if key else"-",bg=r["bg"],fg=c,font=("Consolas",10)).pack(side=tk.LEFT,padx=(6,2))
+      tk.Label(r,text=info["name"][:14],bg=r["bg"],fg=FG,font=("Segoe UI",9)).pack(side=tk.LEFT,padx=2)
+      pv=key[:16]+"..." if key and len(key)>16 else (key or "none")
+      tk.Label(r,text=pv,bg=r["bg"],fg=c if key else T3,font=("Consolas",8)).pack(side=tk.LEFT,padx=4)
+      if key:
+       tk.Button(r,text="Copy",bg=AC,fg="white",font=("Segoe UI",7),bd=0,command=lambda k=key:self._cp_key(k)).pack(side=tk.RIGHT,padx=2)
+       tk.Button(r,text="Test",bg=C2,fg=GR,font=("Segoe UI",7),bd=0,command=lambda p=pid:self._test_key(p)).pack(side=tk.RIGHT,padx=2)
+    except Exception as e:self.kg_out.insert(tk.END,"ERR: "+str(e)+NL)
+  def _cp_key(self,k):self.r.clipboard_clear();self.r.clipboard_append(k);self.stl.config(text="Copied")
+  def _test_key(self,pid):
+    self.stl.config(text="Testing "+pid+"...")
+    def do():
+     try:
+      from gbt.keydb import KeyDB;key=KeyDB().get(pid)
+      os.environ[(pid.upper()+"_API_KEY")]=key
+      from gbt.llm import GBTLLM
+      GBTLLM(provider=pid,timeout=12,max_tokens=10).invoke([{"role":"user","content":"ok"}])
+      self.r.after(0,lambda:self.stl.config(text="OK "+pid))
+     except Exception as e:self.r.after(0,lambda:self.stl.config(text="FAIL "+pid))
+    threading.Thread(target=do,daemon=True).start()
+  def _imp_keys(self):
+    try:from gbt.keydb import auto_import;auto_import();self._rg();self.stl.config(text="IMPORTED")
+    except Exception as e:self.stl.config(text=str(e)[:30])
+  def _bt(self):
+    p=self.p["t"];hd=tk.Frame(p,bg=C1,height=28);hd.pack(fill=tk.X,padx=8,pady=(8,4));hd.pack_propagate(False)
+    tk.Label(hd,text="Autopilot Trade",bg=C1,fg=FG,font=("Segoe UI",11,"bold")).pack(side=tk.LEFT)
+    self.tr_in=tk.Text(p,bg=C2,fg=FG,font=("Segoe UI",10),height=3);self.tr_in.pack(fill=tk.X,padx=8,pady=4)
+    self.tr_in.insert(1.0,"Analyze 600519, buy 100 shares if bullish")
+    bf=tk.Frame(p,bg=BG);bf.pack(fill=tk.X,padx=8)
+    for t,cmd in[("600519","Analyze 600519"),("K-line","Show K-line"),("Buy 100","Buy 100"),("Sell","Sell all")]:
+     tk.Button(bf,text=t,bg=C2,fg=FG,font=("Segoe UI",8),bd=0,command=lambda c=cmd:self.tr_in.delete(1.0,tk.END)or self.tr_in.insert(1.0,c)).pack(side=tk.LEFT,padx=2)
+    tk.Button(bf,text="EXECUTE",bg=AC,fg="white",font=("Segoe UI",9,"bold"),bd=0,command=self._exec_tr).pack(side=tk.RIGHT,padx=4)
+    tk.Button(bf,text="STOP",bg=RD,fg="white",font=("Segoe UI",8),bd=0,command=lambda:setattr(self,"_stop_tr",True)).pack(side=tk.RIGHT,padx=4)
+    self.tr_out=st.ScrolledText(p,bg=C2,fg=GR,font=("Consolas",9),wrap=tk.WORD);self.tr_out.pack(fill=tk.BOTH,expand=True,padx=8,pady=(4,8))
+  def _rt(self):pass
+  def _exec_tr(self):
+    task=self.tr_in.get(1.0,tk.END).strip()
+    if not task:return
+    self._stop_tr=False;NL=chr(10);self.tr_out.insert(tk.END,"TASK: "+task+NL);self.stl.config(text="RUNNING")
+    def loop():
+     try:
+      from gbt.autopilot import Autopilot,compress_for_vision,ScreenState
+      from gbt.llm import GBTLLM;from PIL import ImageGrab
+      llm=GBTLLM(provider="zhipu",model="glm-4v",timeout=60,max_tokens=300)
+      ap=Autopilot(llm_provider=llm)
+      for turn in range(1,4):
+       if self._stop_tr:break
+       self.r.after(0,lambda t=turn:self.tr_out.insert(tk.END,"[T"+str(t)+"] screenshot..."+NL)or self.tr_out.see(tk.END))
+       img=ImageGrab.grab();b64=compress_for_vision(img,480)
+       st=ScreenState(image=img,base64=b64,timestamp=time.time())
+       self.r.after(0,lambda:self.tr_out.insert(tk.END,"[T] GLM-4V analyzing..."+NL)or self.tr_out.see(tk.END))
+       for a in ap.analyze(st,task):
+        if self._stop_tr:break
+        self.r.after(0,lambda a=a:self.tr_out.insert(tk.END,"  ["+a.action_type+"] "+a.reasoning[:100]+NL)or self.tr_out.see(tk.END))
+        try:ap.execute(a)
+        except Exception as e:self.r.after(0,lambda e=e:self.tr_out.insert(tk.END,"  ERR: "+str(e)+NL))
+      self.r.after(0,lambda:self.tr_out.insert(tk.END,"DONE"+NL)or self.stl.config(text="READY"))
+     except Exception as e:self.r.after(0,lambda:self.tr_out.insert(tk.END,"FAIL: "+str(e)+NL)or self.stl.config(text="ERROR"))
+    threading.Thread(target=loop,daemon=True).start()
+  def _bai(self):
+    p=self.p["ai"];hd=tk.Frame(p,bg=C1,height=28);hd.pack(fill=tk.X,padx=8,pady=(8,4));hd.pack_propagate(False)
+    tk.Label(hd,text="AI Engine",bg=C1,fg=FG,font=("Segoe UI",11,"bold")).pack(side=tk.LEFT)
+    bf=tk.Frame(p,bg=BG);bf.pack(fill=tk.X,padx=8,pady=4)
+    for t,cmd in[("LLM","llm"),("Reason","reason"),("Memory","memory"),("KB","kb"),("Router","router"),("OCR","ocr")]:
+     tk.Button(bf,text=t,bg=C2,fg=FG,font=("Segoe UI",8),bd=0,command=lambda c=cmd:self._run_ai(c)).pack(side=tk.LEFT,padx=2)
+    self.ai_out=st.ScrolledText(p,bg=C2,fg=GR,font=("Consolas",9),wrap=tk.WORD);self.ai_out.pack(fill=tk.BOTH,expand=True,padx=8,pady=(4,8))
+  def _rai(self):pass
+  def _run_ai(self,cmd):
+    NL=chr(10);self.ai_out.insert(tk.END,NL+"["+cmd+"]..."+NL)
+    try:
+     if cmd=="llm":
+      from gbt.providers import PROVIDERS
+      for pid,cfg in list(PROVIDERS.items())[:10]:self.ai_out.insert(tk.END,"  "+cfg["name"]+": "+cfg.get("pricing","")+NL)
+     elif cmd=="reason":from gbt.reasoner import Reasoner;self.ai_out.insert(tk.END,"Reasoner: 8 modes"+NL)
+     elif cmd=="memory":from gbt.memory import Memory;self.ai_out.insert(tk.END,"Memory: working+episodic+persistent"+NL)
+     elif cmd=="kb":from gbt.knowledge_base import get_system_prompt;self.ai_out.insert(tk.END,"KB loaded"+NL)
+     elif cmd=="router":from gbt.router import Router;self.ai_out.insert(tk.END,"Router: model routing"+NL)
+     elif cmd=="ocr":from gbt.ocr import screen_to_text;t=screen_to_text();self.ai_out.insert(tk.END,"OCR: "+str(t)[:300]+NL)
+    except Exception as e:self.ai_out.insert(tk.END,"ERR: "+str(e)+NL)
+    self.ai_out.see(tk.END)
+  def _bs(self):
+    p=self.p["s"];hd=tk.Frame(p,bg=C1,height=28);hd.pack(fill=tk.X,padx=8,pady=(8,4));hd.pack_propagate(False)
+    tk.Label(hd,text="Security Center",bg=C1,fg=FG,font=("Segoe UI",11,"bold")).pack(side=tk.LEFT)
+    bf=tk.Frame(p,bg=BG);bf.pack(fill=tk.X,padx=8,pady=4)
+    for t,cmd in[("Evolve","evolve"),("Guard","guard"),("Mirror","mirror"),("Watcher","watcher"),("Risk","risk")]:
+     tk.Button(bf,text=t,bg=C2,fg=FG,font=("Segoe UI",8),bd=0,command=lambda c=cmd:self._run_sec(c)).pack(side=tk.LEFT,padx=2)
+    self.sec_out=st.ScrolledText(p,bg=C2,fg=GR,font=("Consolas",9),wrap=tk.WORD);self.sec_out.pack(fill=tk.BOTH,expand=True,padx=8,pady=(4,8))
+  def _rs(self):pass
+  def _run_sec(self,cmd):
+    NL=chr(10);self.sec_out.insert(tk.END,NL+"["+cmd+"]..."+NL)
+    try:
+     if cmd=="evolve":
+      try:from gbt.evolve import Evolve;self.sec_out.insert(tk.END,"Evolve: 6-step self-evolution"+NL)
+      except:from gbt.evolve import evolve_check;self.sec_out.insert(tk.END,"Evolve: check mode"+NL)
+     elif cmd=="guard":from gbt.guard import Guard;self.sec_out.insert(tk.END,"Guard: pre-action full-scan"+NL)
+     elif cmd=="mirror":from gbt.mirror import Mirror;self.sec_out.insert(tk.END,"Mirror: sandbox-verify-deploy"+NL)
+     elif cmd=="watcher":from gbt.watcher import Watcher;self.sec_out.insert(tk.END,"Watcher: 24/7 monitor"+NL)
+     elif cmd=="risk":from gbt.risk_ctrl import RiskCtrl;self.sec_out.insert(tk.END,"RiskCtrl: position limits"+NL)
+    except Exception as e:self.sec_out.insert(tk.END,"ERR: "+str(e)+NL)
+    self.sec_out.see(tk.END)
+  def _bst(self):
+    p=self.p["st"];hd=tk.Frame(p,bg=C1,height=28);hd.pack(fill=tk.X,padx=8,pady=(8,4));hd.pack_propagate(False)
+    tk.Label(hd,text="System Status",bg=C1,fg=FG,font=("Segoe UI",11,"bold")).pack(side=tk.LEFT)
+    tk.Button(hd,text="Refresh",bg=AC,fg="white",font=("Segoe UI",8),bd=0,padx=8,command=self._rst).pack(side=tk.RIGHT,padx=4)
+    self.st_out=st.ScrolledText(p,bg=C2,fg=FG,font=("Consolas",9),wrap=tk.WORD);self.st_out.pack(fill=tk.BOTH,expand=True,padx=8,pady=(4,8))
+  def _rst(self):
+    NL=chr(10);self.st_out.delete(1.0,tk.END)
+    L=["="*50," GBT + Nanobrowser v3.0 Diagnostics","="*50]
+    try:from gbt.keydb import KeyDB;db=KeyDB();av=db.available();L.append(" Keys: "+str(len(av))+"/"+str(len(db.FREE_TIER))+" configured")
+    except Exception as e:L.append(" Keys: "+str(e))
+    for mod,desc in[("gbt.llm","LLM"),("gbt.autopilot","Autopilot"),("gbt.winctl","WinCtl"),("gbt.strategies","Strategies"),("gbt.trader","Trader"),("gbt.backtest","Backtest"),("gbt.mcp","MCP"),("gbt.reasoner","Reasoner"),("gbt.ocr","OCR"),("gbt.memory","Memory")]:
+     try:__import__(mod);L.append("  "+desc+": Ready")
+     except:L.append("  "+desc+": Not loaded")
+    L.append("="*50);L.append(" Python "+sys.version.split()[0]+" | TK "+str(tk.TkVersion));self.st_out.insert(1.0,NL.join(L))
+
   def run(self):self.r.mainloop()
 
 def main():b=NB();b.r.after(1000,lambda:b.nav("http://localhost:8765/dashboard"));b.run()
