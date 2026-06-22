@@ -42,19 +42,25 @@ def ckllm():
   except:LLM["ollama"]["ok"]=False
   for k in["deepseek","glm","openai"]:LLM[k]["ok"]=bool(os.environ.get(k.upper()+"_API_KEY",""))
 
+
+# Professional Knowledge Base (injected)
+ASHARE_KB="""A-Share Rules: T+1 settlement. Board limits: Main +/-10%, ChiNext/STAR +/-20%, ST +/-5%. Trading: 9:30-11:30,13:00-15:00. Stamp tax 0.1% on sell. Lot size 100 shares. Key indicators: MA5/10/20/60/120/250, MACD, KDJ, RSI, Bollinger. Risk: single stock <=30% position, -7% stop loss, +15% take profit."""
+DESKTOP_KB="""Desktop Capabilities: screenshot(fullscreen/region/window OCR), browser(open/tab/navigate), keyboard(type/hotkey/combo), mouse(click/drag/scroll/move), process(list/kill/start/priority), window(focus/maximize/minimize/enumerate), system(volume/lock/power/clipboard), network(HTTP/WebSocket/port scan). Automated workflows with retry logic."""
+KNOWLEDGE=ASHARE_KB+" | "+DESKTOP_KB
+
 def llmcall(pid,prompt,cb):
   p=LLM.get(pid)
   if not p:return cb("PF")
   def rn():
     try:
       if pid=="ollama":
-        bd=json.dumps({"model":"qwen2.5:0.5b","messages":[{"role":"user","content":prompt}],"stream":False}).encode()
+        bd=json.dumps({"model":"qwen2.5:0.5b","messages":[{"role":"system","content":KNOWLEDGE},{"role":"user","content":prompt}],"stream":False}).encode()
         rq=ur.Request("http://127.0.0.1:11434/api/chat",data=bd,headers={"Content-Type":"application/json"})
         with ur.urlopen(rq,timeout=120)as r:d=json.loads(r.read())
         t=d.get("message",{}).get("content","");p["c"]+=1;p["t"]+=len(t.split());cb(t)
       elif pid=="deepseek":
         k=os.environ.get("DEEPSEEK_API_KEY","")
-        bd=json.dumps({"model":"deepseek-chat","messages":[{"role":"user","content":prompt}],"max_tokens":1024}).encode()
+        bd=json.dumps({"model":"deepseek-chat","messages":[{"role":"system","content":KNOWLEDGE},{"role":"user","content":prompt}],"max_tokens":1024}).encode()
         rq=ur.Request("https://api.deepseek.com/v1/chat/completions",data=bd,headers={"Authorization":"Bearer "+k,"Content-Type":"application/json"})
         with ur.urlopen(rq,timeout=120)as r:d=json.loads(r.read())
         t=d["choices"][0]["message"]["content"];tk=d.get("usage",{}).get("total_tokens",0)
