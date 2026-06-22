@@ -260,7 +260,11 @@ class NB:
   def _tt(self,text):
     for line in text.split(chr(10)):self.bct.insert(tk.END,line+chr(10))
   def _e(self,url,err):
-    if"br"in self.p:self._sh("br");self.bct.configure(state=tk.NORMAL);self.bct.delete(1.0,tk.END)
+    if"br"not in self.p:
+      bf=tk.Frame(self.ct,bg=BG);self.p["br"]=bf
+      self.bct=st.ScrolledText(bf,bg=BG,fg=RD,font=("Consolas",10),wrap=tk.WORD,padx=16,pady=12)
+      self.bct.pack(fill=tk.BOTH,expand=True)
+    self._sh("br");self.bct.configure(state=tk.NORMAL);self.bct.delete(1.0,tk.END)
     self.bct.insert(tk.END,"ERR"+chr(10)+url+chr(10)+chr(10)+err+chr(10));self.bct.configure(state=tk.DISABLED);self.stl.config(text="Error")
   def run(self):self.r.mainloop()
 
